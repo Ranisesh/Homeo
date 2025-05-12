@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeo Remedy Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        #remedyResult {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-left: 5px solid #17a2b8;
+            border-radius: 4px;
+            min-height: 50px; /* Ensures the box is visible even when empty */
+        }
+        .remedy-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ccc;
+        }
+        .remedy-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .remedy-item h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .remedy-item p {
+            margin-bottom: 5px;
+        }
+        .disclaimer {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Homeo Remedy Finder</h1>
+
+        <label for="ailmentDropdown">Select an Ailment:</label>
+        <select id="ailmentDropdown">
+            <option value="">-- Select an Ailment --</option>
+        </select>
+
+        <div id="remedyResult">
+            <p>Please select an ailment from the list to see potential remedies and their indications.</p>
+        </div>
+
+        <div class="disclaimer">
+            <strong>Disclaimer:</strong> This Homeo Remedy Finder is for informational purposes only and should not be considered a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or another qualified health provider with any questions you may have regarding a medical condition.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const remedyData = [
+                {
+                    id: "common_cold",
+                    name: "Common Cold / Coryza",
+                    details: [
+                        { remedy: "Aconitum Napellus", symptoms: "Sudden onset after exposure to cold, dry wind. High fever, restlessness, anxiety, thirst. Coryza is dry at first, then watery. Sneezing. Often the first remedy for colds." },
+                        { remedy: "Allium Cepa", symptoms: "Profuse, watery, acrid (burning) nasal discharge that irritates the upper lip. Bland (non-irritating) tearing from eyes. Frequent sneezing. Symptoms worse in a warm room, better in open air." },
+                        { remedy: "Belladonna", symptoms: "Sudden, violent onset. High fever with hot, red face, throbbing headache, and dilated pupils. Dryness of mouth and throat, often with little thirst despite the heat. Sensitive to light and noise." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Thick, bland (non-irritating), yellow-green nasal discharge. Changeable symptoms. Weepy, desires sympathy, feels better with consolation. Worse in warm rooms, in the evening; better in fresh, open air. Loss of taste/smell." },
+                        { remedy: "Nux Vomica", symptoms: "Cold from dry cold weather or drafts. Stuffy nose, especially at night and outdoors, but runs during the day and in a warm room. Irritable, chilly, sensitive to noise, odors, light." },
+                        { remedy: "Euphrasia Officinalis", symptoms: "Profuse, acrid (burning) tearing from eyes, which are red and irritated. Bland (non-irritating) nasal discharge. Frequent blinking. Cough." },
+                        { remedy: "Mercurius Solubilis", symptoms: "Creeping chilliness. Profuse perspiration that doesn't relieve. Offensive breath, excessive salivation. Sore throat. Symptoms worse at night, from warmth of bed." }
+                    ]
+                },
+                {
+                    id: "cough",
+                    name: "Cough",
+                    details: [
+                        { remedy: "Bryonia Alba", symptoms: "Dry, hard, painful cough, often worse with any motion, talking, or deep breathing. Stitching pains in chest. Thirsty for large quantities of cold water. Irritable, wants to be left alone." },
+                        { remedy: "Drosera Rotundifolia", symptoms: "Spasmodic, dry, irritating cough, often in long fits, worse after midnight, on lying down, or talking. Sensation of a feather in the larynx. May hold chest while coughing. Whooping cough." },
+                        { remedy: "Spongia Tosta", symptoms: "Dry, barking, croupy cough, like a saw going through wood. Hoarseness. Worse from sweets, cold drinks, talking, before midnight. Better from eating or drinking warm things." },
+                        { remedy: "Antimonium Tartaricum", symptoms: "Loose, rattling cough with much mucus in the chest, but difficult to expectorate. Drowsiness, weakness. Child is irritable and doesn't want to be touched or looked at. Face pale or cyanotic." },
+                        { remedy: "Ipecacuanha", symptoms: "Violent cough with every breath. Constant nausea that is not relieved by vomiting. Suffocative, gagging cough. Rattling in chest but little expectoration. Bright red bleeding with cough." },
+                        { remedy: "Phosphorus", symptoms: "Dry, tickling, exhausting cough, worse from cold air, talking, laughing, lying on left side. Burning pain in chest. Craves cold drinks. Anxious, fearful when alone." },
+                        { remedy: "Rumex Crispus", symptoms: "Dry, teasing cough, triggered by tickling in the throat pit or by inhaling cold air. Worse undressing or uncovering. Covers mouth to keep cold air out." }
+                    ]
+                },
+                {
+                    id: "headache",
+                    name: "Headache",
+                    details: [
+                        { remedy: "Belladonna", symptoms: "Throbbing, pulsating headache, often right-sided. Face flushed, pupils dilated. Worse from light, noise, motion, jarring. Sudden onset. Better sitting up in a dark, quiet room." },
+                        { remedy: "Bryonia Alba", symptoms: "Bursting, splitting headache, as if head would fly to pieces. Worse from any motion, even of eyes. Better from pressure and lying quietly. Dry mouth, thirsty for large amounts." },
+                        { remedy: "Glonoinum", symptoms: "Throbbing, congestive headache with surging of blood to head. Sensation of head being enormously large. Worse from sun, heat, jarring. Better from uncovering head, pressure." },
+                        { remedy: "Nux Vomica", symptoms: "Headache from overindulgence (food, alcohol), stress, or mental overexertion. Irritable, impatient. Often a morning headache. Sensation of a nail driven into the head." },
+                        { remedy: "Sanguinaria Canadensis", symptoms: "Right-sided headache, often starting in the neck/occiput and settling over the right eye. Periodical sick headache (migraine). Veins on temples distended. Better after vomiting or sleep." },
+                        { remedy: "Natrum Muriaticum", symptoms: "Headache like little hammers beating in the head, often after grief or emotional upset. Worse from sun, mental exertion, 10-11 AM. Often accompanied by visual disturbances (zig-zags). Craves salt." },
+                        { remedy: "Spigelia Anthelmia", symptoms: "Severe, sharp, stitching, or burning pain, often left-sided, especially in or above the left eye, extending back to occiput. Worse from motion, noise, stooping. Better lying on right side with head high." }
+                    ]
+                },
+                {
+                    id: "sore_throat",
+                    name: "Sore Throat",
+                    details: [
+                        { remedy: "Belladonna", symptoms: "Bright red, swollen throat, tonsils enlarged. Burning, dryness. Pain worse on right side, from swallowing (especially liquids). High fever. Sudden onset." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Sticking, splinter-like pain in throat, as if a fishbone were stuck. Pain radiates to ears on swallowing. Very sensitive to cold air or touch. Chilly, irritable. Pus formation (abscess)." },
+                        { remedy: "Lachesis Mutus", symptoms: "Throat pain worse on left side, or starts left and goes to right. Sensation of a lump or constriction. Cannot bear anything tight around the neck. Worse from warm drinks, after sleep. Talkative." },
+                        { remedy: "Phytolacca Decandra", symptoms: "Dark red or bluish-red throat. Pain at root of tongue, extending to ears when swallowing. Sensation of a hot ball in throat. Glands swollen. Aching all over, prostration." },
+                        { remedy: "Mercurius Solubilis", symptoms: "Raw, burning sore throat. Profuse, offensive saliva and perspiration. Metallic taste. Gums swollen, tongue coated and shows imprints of teeth. Worse at night, from warmth of bed." },
+                        { remedy: "Apis Mellifica", symptoms: "Throat and tonsils bright red, swollen, shiny (oedematous). Stinging, burning pain. Uvula swollen, like a water bag. Better from cold drinks or ice. Worse from heat." }
+                    ]
+                },
+                {
+                    id: "digestive_upset",
+                    name: "Digestive Upset (Indigestion, Bloating)",
+                    details: [
+                        { remedy: "Nux Vomica", symptoms: "Indigestion after overeating rich food, alcohol, or from stress. Nausea, sour belching, heartburn. Sensation of a stone in the stomach. Irritable, impatient. Wants to vomit but cannot." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Indigestion from rich, fatty foods, pork, or ice cream. Bloating, flatulence. Taste of food remains long after eating. Not thirsty. Changeable stools. Mild, weepy disposition." },
+                        { remedy: "Carbo Vegetabilis", symptoms: "Excessive bloating and gas in upper abdomen, with much belching that gives temporary relief. Sensation of fullness. Weakness, faintness, wants to be fanned. Food turns to gas." },
+                        { remedy: "Lycopodium Clavatum", symptoms: "Bloating and gas in lower abdomen, especially after eating, worse 4-8 PM. Sensation of tightness around waist. Good appetite but feels full quickly. Craves sweets. Often associated with liver/gallbladder issues." },
+                        { remedy: "Arsenicum Album", symptoms: "Burning pains in stomach, relieved by heat. Vomiting and diarrhea, often simultaneously. Great anxiety and restlessness. Thirsty for small sips of cold water. Chilly. Food poisoning symptoms." },
+                        { remedy: "China Officinalis (Cinchona)", symptoms: "Painless diarrhea, debility from fluid loss. Bloating of entire abdomen, not relieved by belching or passing gas. Bitter taste. Worse after eating fruit or milk." }
+                    ]
+                },
+                {
+                    id: "diarrhea",
+                    name: "Diarrhea",
+                    details: [
+                        { remedy: "Arsenicum Album", symptoms: "Watery, offensive, burning diarrhea, often with vomiting. Prostration, anxiety, restlessness. Thirst for small, frequent sips of cold water. Worse after midnight, from cold food/drinks." },
+                        { remedy: "Podophyllum Peltatum", symptoms: "Profuse, watery, gushing, offensive, painless diarrhea, often early morning. May be yellow or greenish. Sensation of weakness or sinking in abdomen. Often associated with teething in children." },
+                        { remedy: "Veratrum Album", symptoms: "Profuse, watery, rice-water stools with violent vomiting and cramps. Cold sweat on forehead. Extreme coldness and weakness. Thirst for large quantities of cold water." },
+                        { remedy: "Chamomilla", symptoms: "Diarrhea during teething. Stools are green, slimy, like chopped eggs or spinach, and smell like rotten eggs. Child is extremely irritable, restless, wants to be carried." },
+                        { remedy: "Mercurius Corrosivus", symptoms: "Dysentery-like stools with severe tenesmus (straining) before, during, and after stool. Stools are bloody, slimy, offensive. Burning pain. Not relieved by stool." }
+                    ]
+                },
+                {
+                    id: "constipation",
+                    name: "Constipation",
+                    details: [
+                        { remedy: "Nux Vomica", symptoms: "Frequent, ineffectual urging for stool. Sensation as if not finished. Constipation from sedentary lifestyle, overwork, rich foods, or overuse of laxatives. Irritable, tense." },
+                        { remedy: "Bryonia Alba", symptoms: "Large, hard, dry stools, as if burnt. Difficult to pass, requires much straining. Dry mouth and lips, very thirsty for large quantities of water. Headache from constipation." },
+                        { remedy: "Alumina", symptoms: "No desire for stool for days. Stools are hard, knotty, and require great straining, even soft stool is expelled with difficulty. Dryness of mucous membranes. Often for infants or elderly." },
+                        { remedy: "Silicea (Silica)", symptoms: "Stool slips back after being partially expelled ('bashful stool'). Much straining. Constipation with chilliness and lack of vital heat. Sweaty feet." },
+                        { remedy: "Lycopodium Clavatum", symptoms: "Ineffectual urging. Hard, difficult stools, often with flatulence and bloating. Sensation of constriction in rectum. Symptoms worse 4-8 PM." }
+                    ]
+                },
+                {
+                    id: "bruises_trauma",
+                    name: "Bruises & Trauma",
+                    details: [
+                        { remedy: "Arnica Montana", symptoms: "First remedy for bruises, sprains, muscle soreness, shock from injury. Sore, bruised feeling, as if beaten. Bed feels too hard. Fear of being touched or approached." },
+                        { remedy: "Bellis Perennis", symptoms: "Deeper tissue injuries, bruises to trunk or pelvis. Soreness after surgery. 'Gardener's remedy' for sprains and bruises. Worse from cold bathing." },
+                        { remedy: "Ledum Palustre", symptoms: "Puncture wounds (e.g., from nails, insect bites). Bruises that are cold to touch but feel better from cold applications. 'Black eye' from a blow." },
+                        { remedy: "Ruta Graveolens", symptoms: "Injuries to tendons, ligaments, cartilage, and periosteum (bone covering). Sprains, especially of wrists and ankles. Bruised bone feeling. Eye strain." },
+                        { remedy: "Hypericum Perforatum", symptoms: "Injuries to nerve-rich areas (fingers, toes, spine). Sharp, shooting pains along nerves. Crush injuries. Pain after dental work or surgery." }
+                    ]
+                },
+                {
+                    id: "burns",
+                    name: "Burns (Minor)",
+                    details: [
+                        { remedy: "Urtica Urens", symptoms: "Simple burns with redness and stinging, itching pain. Similar to nettle rash. Small blisters. Good for first-degree burns." },
+                        { remedy: "Cantharis Vesicatoria", symptoms: "Second or third-degree burns with blistering. Intense, burning, smarting, raw pain. Better from cold applications. Also for sunburn." },
+                        { remedy: "Causticum", symptoms: "Burns that are slow to heal, or old burns that reopen. Burning, rawness, soreness. Sequelae of burns (e.g., scars, contractures). Better from warmth." }
+                    ]
+                },
+                {
+                    id: "insect_bites_stings",
+                    name: "Insect Bites & Stings",
+                    details: [
+                        { remedy: "Apis Mellifica", symptoms: "Red, swollen, hot, stinging, oedematous (puffy) bites/stings. Better from cold applications. Worse from heat. Especially for bee stings or similar reactions." },
+                        { remedy: "Ledum Palustre", symptoms: "Puncture wounds from bites/stings (e.g., mosquitoes, ticks). Affected part is swollen, bluish, cold, but feels better from cold applications. Prevents infection." },
+                        { remedy: "Hypericum Perforatum", symptoms: "Painful bites/stings in nerve-rich areas. Stings from wasps or scorpions with sharp, shooting pains. Prevents tetanus." },
+                        { remedy: "Cantharis Vesicatoria", symptoms: "Bites that cause intense burning and blistering, like fire ant bites." }
+                    ]
+                },
+                 {
+                    id: "anxiety_nervousness",
+                    name: "Anxiety & Nervousness",
+                    details: [
+                        { remedy: "Aconitum Napellus", symptoms: "Sudden, intense anxiety, panic attacks, often with fear of death. Restlessness, palpitations. May follow a fright or shock. Worse at night, in crowds." },
+                        { remedy: "Argentum Nitricum", symptoms: "Anticipatory anxiety (e.g., before exams, public speaking). Hurried, impulsive, craves sweets. Fear of heights, crowds, narrow places. Diarrhea from anxiety." },
+                        { remedy: "Arsenicum Album", symptoms: "Anxiety about health, security, finances. Restless, chilly, meticulous. Panic attacks, especially after midnight. Needs reassurance. Thirsty for sips of cold water." },
+                        { remedy: "Gelsemium Sempervirens", symptoms: "Anxiety with weakness, trembling, drowsiness, dizziness. 'Stage fright' or performance anxiety. Wants to be quiet and alone. Heavy eyelids, dull headache." },
+                        { remedy: "Ignatia Amara", symptoms: "Anxiety and nervousness from grief, disappointment, or suppressed emotions. Moody, sighing, tendency to brood. Contradictory symptoms. Lump in throat sensation." },
+                        { remedy: "Lycopodium Clavatum", symptoms: "Anxiety from lack of confidence, fear of failure, especially when facing new challenges, though usually performs well. Dictatorial at home, timid elsewhere. Digestive issues, bloating. Worse 4-8 PM." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Anxiety with weepiness, clinginess, needing reassurance. Changeable moods. Feels better from open air and consolation. Worse in warm rooms, in the evening." },
+                        { remedy: "Kali Phosphoricum", symptoms: "Nervous exhaustion from overwork, worry, or illness. Easily startled, sensitive, irritable. Brain fag, difficulty concentrating. Headaches. Better from gentle motion, eating." }
+                    ]
+                },
+                {
+                    id: "insomnia",
+                    name: "Insomnia",
+                    details: [
+                        { remedy: "Coffea Cruda", symptoms: "Insomnia from racing thoughts, overexcitement, mental activity. Ideas crowd the mind. Senses are acute. Wide awake, restless. Often after good news or joy." },
+                        { remedy: "Nux Vomica", symptoms: "Insomnia from mental strain, overwork, or stimulants (coffee, alcohol). Wakes around 3-4 AM and cannot get back to sleep; thoughts of business or worries. Irritable, chilly." },
+                        { remedy: "Passiflora Incarnata (Mother Tincture)", symptoms: "General insomnia, especially in the nervous, restless, or overworked. Calming effect. May help quiet the nervous system." },
+                        { remedy: "Chamomilla", symptoms: "Sleeplessness in irritable children (or adults), especially during teething or from pain. Wants to be carried or rocked. One cheek red, the other pale. Moaning in sleep." },
+                        { remedy: "Kali Phosphoricum", symptoms: "Insomnia from nervous exhaustion, worry, or overstudy. Night terrors. Anxious and restless." },
+                        { remedy: "Ignatia Amara", symptoms: "Insomnia from grief, worry, or emotional shock. Much sighing. Jerking of limbs on falling asleep. Light sleeper, easily disturbed." }
+                    ]
+                },
+                {
+                    id: "muscle_soreness_sprains",
+                    name: "Muscle Soreness / Sprains",
+                    details: [
+                        { remedy: "Arnica Montana", symptoms: "Sore, bruised feeling all over, as if beaten. After overexertion, injury. Bed feels too hard. Aversion to touch." },
+                        { remedy: "Rhus Toxicodendron", symptoms: "Stiffness and pain worse on first motion, better with continued motion. Restlessness. Worse in cold, damp weather, before storms. Sprains from overreaching or overlifting." },
+                        { remedy: "Bryonia Alba", symptoms: "Pain worse from any motion, better from rest and pressure. Swelling, heat. Often for joint pains that are sharp, stitching." },
+                        { remedy: "Ruta Graveolens", symptoms: "Injury to tendons, ligaments, periosteum. Deep aching pain. 'Lameness' after sprains, especially wrists, ankles. Worse from cold and damp." },
+                        { remedy: "Bellis Perennis", symptoms: "Muscle soreness from injury to deeper tissues, after blows or falls. Soreness of abdominal walls or pelvic region. Feels very tired and bruised." }
+                    ]
+                },
+                {
+                    id: "fever",
+                    name: "Fever (General)",
+                    details: [
+                        { remedy: "Aconitum Napellus", symptoms: "Sudden high fever, often after exposure to cold, dry wind. Skin is hot, dry. Intense thirst for cold water. Restlessness, anxiety, fear." },
+                        { remedy: "Belladonna", symptoms: "Sudden, intense high fever. Face is bright red, hot. Skin dry and burning. Pupils dilated. Throbbing headache. Little or no thirst despite heat. May be delirious." },
+                        { remedy: "Ferrum Phosphoricum", symptoms: "First stage of inflammatory fevers, before localization. Gradual onset. Flushed face, but not as intensely red as Belladonna. Thirst. Pulse soft and full. Often for earaches or colds starting with fever." },
+                        { remedy: "Gelsemium Sempervirens", symptoms: "Fever with drowsiness, dizziness, dullness, and muscular weakness. Chills run up and down the spine. No thirst. Heavy eyelids. Often with flu-like symptoms." },
+                        { remedy: "Bryonia Alba", symptoms: "Fever with body aches, worse from any motion. Dry mouth, great thirst for large quantities of cold water. Irritable, wants to be left alone. Headache." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Fever with changeable symptoms. Chills alternating with heat. No thirst or thirstless with fever. Whiny, weepy, desires fresh air. Often one-sided symptoms (e.g., one hand hot, other cold)." }
+                    ]
+                },
+                {
+                    id: "allergies_hay_fever",
+                    name: "Allergies / Hay Fever",
+                    details: [
+                        { remedy: "Allium Cepa", symptoms: "Profuse, watery, acrid (burning) nasal discharge that irritates nostrils and upper lip. Profuse, bland (non-irritating) tearing from eyes. Sneezing. Worse in warm room, better in open air." },
+                        { remedy: "Euphrasia Officinalis", symptoms: "Profuse, acrid (burning) tearing from eyes, causing irritation and redness. Bland (non-irritating) nasal discharge. Eyes sensitive to light. Frequent blinking." },
+                        { remedy: "Sabadilla", symptoms: "Spasmodic, violent sneezing with watery nasal discharge. Itching and tickling in nose and palate. Watery eyes. Sensitive to cold and odors of flowers." },
+                        { remedy: "Arsenicum Album", symptoms: "Thin, watery, burning nasal discharge. Sneezing without relief. Burning eyes. Restlessness, anxiety. Chilly, better from warmth. Thirsty for sips." },
+                        { remedy: "Natrum Muriaticum", symptoms: "Watery or egg-white like nasal discharge. Sneezing fits, often in the morning. Itchy eyes, nose. Chapped lips. Headache. Often after emotional suppression. Craves salt." },
+                        { remedy: "Wyethia Helenioides", symptoms: "Intolerable itching in the palate, roof of mouth, and back of nose, extending to throat and ears. Dry, hacking cough. Sensation of dryness in throat." }
+                    ]
+                },
+                {
+                    id: "earache",
+                    name: "Earache",
+                    details: [
+                        { remedy: "Belladonna", symptoms: "Sudden, violent, throbbing pain, often right-sided. Ear canal red, hot. Child cries out in sleep. Worse from touch, noise, jarring. High fever." },
+                        { remedy: "Chamomilla", symptoms: "Intense, unbearable ear pain, often during teething. Child is extremely irritable, cross, wants to be carried. One cheek red, other pale. Worse at night, from warmth." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Earache with thick, bland, yellow-green discharge. Pain worse at night, in a warm room. Weepy, clingy child. Often associated with colds or after getting wet." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Sharp, stitching, splinter-like pain in ear. Very sensitive to touch and cold air. Ear may discharge foul-smelling pus. Chilly, irritable. Worse from uncovering." },
+                        { remedy: "Mercurius Solubilis", symptoms: "Earache with thick, yellow-green, offensive discharge. Sticking pains. Worse at night, from warmth of bed. Profuse sweating, offensive breath." },
+                        { remedy: "Ferrum Phosphoricum", symptoms: "Early stages of earache, especially if feverish. Ear is red, painful, but not as intense as Belladonna. Fullness in ear. Before pus formation." }
+                    ]
+                },
+                {
+                    id: "motion_sickness",
+                    name: "Motion Sickness",
+                    details: [
+                        { remedy: "Cocculus Indicus", symptoms: "Nausea and vomiting from motion (car, boat, train), with dizziness and weakness. Empty, hollow feeling in stomach. Worse from sight or smell of food, rising up. Better lying down." },
+                        { remedy: "Tabacum", symptoms: "Severe nausea with deathly paleness, cold sweat, and prostration. Vomiting. Sensation of sinking in pit of stomach. Better from fresh, cold air, uncovering abdomen." },
+                        { remedy: "Petroleum", symptoms: "Nausea and dizziness, especially from car or sea sickness. Often with occipital headache. Symptoms worse from motion, better from warmth and eating." },
+                        { remedy: "Nux Vomica", symptoms: "Nausea with headache and irritability. Wants to vomit but cannot. Often after overindulgence or for those who are generally stressed and tense." }
+                    ]
+                },
+                {
+                    id: "skin_rashes_itching",
+                    name: "Skin Rashes & Itching (General)",
+                    details: [
+                        { remedy: "Sulphur", symptoms: "Intense itching, burning rashes, worse from warmth (bed, bathing), scratching. Skin looks dirty, unhealthy. Scratching leads to burning, then bleeding. Symptoms often recur." },
+                        { remedy: "Graphites", symptoms: "Thickened, cracked skin with sticky, honey-like oozing. Itching worse from warmth. Often in folds of skin (elbows, knees, behind ears). For eczema, psoriasis. Chilly, stout individuals." },
+                        { remedy: "Rhus Toxicodendron", symptoms: "Vesicular (blister-like) eruptions with intense itching and restlessness. Poison ivy-like rashes. Better from hot applications/bathing. Worse from cold, damp." },
+                        { remedy: "Apis Mellifica", symptoms: "Pink, swollen, oedematous rashes with stinging, burning pain. Hives. Better from cold applications. Worse from heat." },
+                        { remedy: "Urtica Urens", symptoms: "Itchy, stinging, blotchy rash like nettle stings. Hives that appear and disappear suddenly. Worse from touch, cold air, water. Shellfish allergy rash." }
+                    ]
+                },
+                {
+                    id: "teething_problems",
+                    name: "Teething Problems",
+                    details: [
+                        { remedy: "Chamomilla", symptoms: "Child is extremely irritable, restless, angry, wants to be carried constantly and is only quiet then. One cheek red, the other pale. Green, slimy diarrhea. Pain seems unbearable." },
+                        { remedy: "Calcarea Carbonica", symptoms: "Difficult, delayed teething in chubby, sweaty-headed children. Sour smelling stools. May crave eggs or indigestible things. Fearful, obstinate." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Mild, gentle, weepy child who seeks comfort. Symptoms are changeable. Not very thirsty. Better in open air. Earaches or colds during teething." },
+                        { remedy: "Belladonna", symptoms: "Sudden onset of symptoms. Face flushed, gums red and swollen, hot. Fever. Child may cry out in sleep or start suddenly." },
+                        { remedy: "Kreosotum", symptoms: "Teeth decay quickly after erupting. Gums spongy, bleed easily. Very irritable, wakeful at night. Acrid, offensive discharges." }
+                    ]
+                },
+                {
+                    id: "menstrual_cramps",
+                    name: "Menstrual Cramps (Dysmenorrhea)",
+                    details: [
+                        { remedy: "Magnesia Phosphorica", symptoms: "Cramping, colicky pains, better from warmth (hot water bottle) and pressure (bending double). Pains may radiate. Often right-sided. Quick onset." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Changeable menstrual flow (starts, stops, varies in character). Weepy, emotional, seeks sympathy. Cramps with chilliness. Worse in warm room, better fresh air." },
+                        { remedy: "Sepia Officinalis", symptoms: "Dragging-down sensation in pelvis, as if everything would fall out. Bearing-down pains. Irritable, indifferent to loved ones. Chilly. Better from vigorous exercise." },
+                        { remedy: "Belladonna", symptoms: "Sudden, violent, throbbing, bearing-down pains. Flow is bright red, hot, profuse, or clotted. Worse from jarring or motion. Face flushed." },
+                        { remedy: "Cimicifuga Racemosa (Actaea Racemosa)", symptoms: "Severe, labor-like pains that shoot across pelvis or down thighs. The more profuse the flow, the worse the pain. Gloomy, talkative, fearful. Back and neck stiffness." },
+                        { remedy: "Nux Vomica", symptoms: "Spasmodic, irregular pains extending to rectum or causing urge for stool. Irritable, impatient, chilly. Menses often early and profuse, or irregular." }
+                    ]
+                },
+                {
+                    id: "warts",
+                    name: "Warts",
+                    details: [
+                        { remedy: "Thuja Occidentalis", symptoms: "Main remedy for warts. Especially soft, fleshy, cauliflower-like warts that bleed easily. Warts on covered parts, genital warts. Ill effects of vaccination." },
+                        { remedy: "Causticum", symptoms: "Old, large warts, often on face (nose, eyelids, eyebrows) or hands (fingertips, under nails). Warts that are hard, inflamed, or painful. Tendency to bleed easily." },
+                        { remedy: "Antimonium Crudum", symptoms: "Hard, smooth, horny warts, often in groups, especially on soles of feet (plantar warts) or hands. Calloused skin. Irritable, sentimental individuals." },
+                        { remedy: "Nitricum Acidum", symptoms: "Large, jagged, bleeding, splinter-like warts, often yellow. Sticking or pricking pains. Especially on muco-cutaneous junctions (lips, anus)." }
+                    ]
+                },
+                {
+                    id: "acne",
+                    name: "Acne",
+                    details: [
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Pustular acne, very sensitive to touch, cold. Splinter-like pains. Pimples tend to suppurate (form pus). Chilly, irritable individuals." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Acne related to puberty or rich, fatty foods. Changeable symptoms. Worse before menses in females. Mild, weepy disposition." },
+                        { remedy: "Silicea (Silica)", symptoms: "Acne that leaves scars or pits. Pimples that are slow to heal, or form hard nodules. Lack of vital heat, sweaty hands/feet." },
+                        { remedy: "Sulphur", symptoms: "Dirty-looking skin, blackheads, pimples. Itching worse from warmth and washing. Skin unhealthy, prone to eruptions." },
+                        { remedy: "Kali Bromatum", symptoms: "Acne on face, chest, shoulders. Bluish-red, pustular, itchy lesions. Often in young people. Restlessness, fidgety hands." }
+                    ]
+                },
+                {
+                    id: "back_pain_low",
+                    name: "Back Pain (Low)",
+                    details: [
+                        { remedy: "Rhus Toxicodendron", symptoms: "Pain and stiffness in lower back, worse on initial movement, better with continued motion and warmth. Worse from damp cold, overexertion. Restlessness." },
+                        { remedy: "Bryonia Alba", symptoms: "Stitching, tearing pain in lower back, worse from any motion, better from rest and pressure. May need to lie still. Often after injury or catching cold." },
+                        { remedy: "Aesculus Hippocastanum", symptoms: "Dull, aching pain in lumbosacral region, as if back would break. Worse from walking or stooping. Often with hemorrhoids and constipation. Sensation of fullness." },
+                        { remedy: "Kali Carbonicum", symptoms: "Sharp, stitching pains in lower back, often radiating to buttocks or thighs. Weakness in back. Worse around 2-4 AM, from cold. Better from pressure, sitting up." }
+                    ]
+                },
+                {
+                    id: "cystitis_uti",
+                    name: "Bladder Infection / Cystitis (UTI)",
+                    details: [
+                        { remedy: "Cantharis Vesicatoria", symptoms: "Intense burning, cutting pain before, during, and after urination. Constant, intolerable urging to urinate, passing only small amounts, sometimes bloody. Extreme distress." },
+                        { remedy: "Apis Mellifica", symptoms: "Burning, stinging pain during urination, especially the last drops. Frequent, scanty urination. Swelling. Worse from heat, better from cold." },
+                        { remedy: "Sarsaparilla Officinalis", symptoms: "Severe pain at the end of urination. Urine may be scanty, slimy, or contain white sand. Child screams before and during urination. Pain in urethra." },
+                        { remedy: "Nux Vomica", symptoms: "Irritable bladder with constant urging but only small amounts passed. Spasmodic pain. Often from cold exposure or overindulgence. Chilly, irritable." },
+                        { remedy: "Staphysagria", symptoms: "Cystitis after intercourse ('honeymoon cystitis'), catheterization, or suppressed anger. Burning in urethra when not urinating, better during flow. Sensation of a drop of urine constantly rolling in urethra." }
+                    ]
+                },
+                 {
+                    id: "cold_sores_herpes_labialis",
+                    name: "Cold Sores (Herpes Labialis)",
+                    details: [
+                        { remedy: "Natrum Muriaticum", symptoms: "Cold sores, often on lips or around mouth, like pearls. Outbreaks from sun exposure, fever, or emotional stress. Cracked lips, especially in the middle of lower lip. Grief, introverted." },
+                        { remedy: "Rhus Toxicodendron", symptoms: "Vesicular eruptions (blisters) with burning and itching. Often appear during fever or colds. Restlessness. Better from warmth." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Cold sores that are very sensitive to touch and cold. Tendency to form pus. Splinter-like pains. Chilly, irritable." },
+                        { remedy: "Sepia Officinalis", symptoms: "Herpetic eruptions around mouth, especially during menses or pregnancy. Indifference, weariness. Yellowish saddle across nose." }
+                    ]
+                },
+                {
+                    id: "conjunctivitis_pink_eye",
+                    name: "Conjunctivitis (Pink Eye)",
+                    details: [
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Thick, yellow-green, bland (non-irritating) discharge from eyes. Eyelids stuck together in the morning. Itching and burning. Better from cold applications and open air. Weepy disposition." },
+                        { remedy: "Euphrasia Officinalis", symptoms: "Watery, acrid (burning) discharge from eyes that makes them red and sore. Bland nasal discharge. Sensation of sand in eyes. Frequent blinking, sensitivity to light." },
+                        { remedy: "Belladonna", symptoms: "Sudden onset of bright red, dry, burning eyes. Throbbing pain. Dilated pupils. Sensitivity to light. High fever may be present." },
+                        { remedy: "Argentum Nitricum", symptoms: "Copious, pus-like, bland discharge. Eyelids swollen, red, thick. Photophobia. Often in newborns or from eyestrain. Craves sweets." },
+                        { remedy: "Sulphur", symptoms: "Eyes feel gritty, burning, itching. Red rims of eyelids. Worse from bathing and warmth. Chronic or recurrent conjunctivitis." }
+                    ]
+                },
+                {
+                    id: "fatigue_exhaustion",
+                    name: "Fatigue / Exhaustion",
+                    details: [
+                        { remedy: "Phosphoricum Acidum", symptoms: "Exhaustion and debility after grief, illness (especially flu), or mental overwork. Apathetic, indifferent, listless. Difficulty concentrating. May have hair loss or premature greying." },
+                        { remedy: "Kali Phosphoricum", symptoms: "Nervous exhaustion from overwork, stress, worry. Brain fag, mental weakness. Irritable, easily startled, anxious. Headaches. Better from gentle activity, eating." },
+                        { remedy: "Gelsemium Sempervirens", symptoms: "Fatigue with drowsiness, dizziness, dullness, muscular weakness, and trembling. Heavy eyelids. Lack of courage. Often with flu or anticipatory anxiety." },
+                        { remedy: "China Officinalis (Cinchona)", symptoms: "Debility and exhaustion from loss of vital fluids (e.g., after profuse sweating, diarrhea, hemorrhage, nursing). Pale, weak, sensitive to drafts. Bloating." },
+                        { remedy: "Nux Vomica", symptoms: "Fatigue from overwork, lack of sleep, stimulants, or mental strain. Irritable, impatient, chilly. Wakes early morning and can't get back to sleep." }
+                    ]
+                },
+                {
+                    id: "flu_influenza",
+                    name: "Flu (Influenza)",
+                    details: [
+                        { remedy: "Gelsemium Sempervirens", symptoms: "Classic flu remedy: Drowsiness, dizziness, dullness, muscular weakness, trembling. Chills running up and down spine. Heavy eyelids, headache at back of head. No thirst. Slow onset." },
+                        { remedy: "Bryonia Alba", symptoms: "High fever, body aches worse from any motion. Dry cough, dry mouth, great thirst for large quantities of cold water. Headache. Irritable, wants to be left alone and still." },
+                        { remedy: "Eupatorium Perfoliatum", symptoms: "Intense aching in bones, as if broken. Soreness of muscles. High fever with chills, often in morning (7-9 AM). Thirst for cold water. Nausea, vomiting of bile." },
+                        { remedy: "Rhus Toxicodendron", symptoms: "Restlessness with aching in limbs, stiffness. Worse on initial movement, better with continued motion. Chilly, often with a tickling cough. May have cold sore outbreak. Worse in cold, damp weather." },
+                        { remedy: "Oscillococcinum", symptoms: "Often taken at the very first sign of flu-like symptoms (within 24-48 hours). May reduce duration and severity. General body aches, chills, fever." }
+                    ]
+                },
+                {
+                    id: "hemorrhoids_piles",
+                    name: "Hemorrhoids (Piles)",
+                    details: [
+                        { remedy: "Aesculus Hippocastanum", symptoms: "Hemorrhoids feel like sharp sticks or fullness in rectum. Purple, painful, often bleeding, rarely itchy. Associated with aching in lower back. Worse from standing or walking." },
+                        { remedy: "Hamamelis Virginiana", symptoms: "Bleeding hemorrhoids with dark, venous blood. Soreness, rawness, bruised feeling in rectum. Weakness from blood loss. Varicose veins elsewhere." },
+                        { remedy: "Nux Vomica", symptoms: "Itching, painful hemorrhoids, often with ineffectual urging for stool. Constipation. Worse from rich food, alcohol, sedentary habits. Irritable." },
+                        { remedy: "Collinsonia Canadensis", symptoms: "Stubborn hemorrhoids with severe constipation (hard, dry stools). Sensation of sticks or sand in rectum. Often in pregnant women or those with heart conditions." },
+                        { remedy: "Sulphur", symptoms: "Itching, burning, oozing hemorrhoids. Worse from warmth, standing, bathing. Redness around anus. Often with chronic constipation or diarrhea." }
+                    ]
+                },
+                {
+                    id: "hoarseness_laryngitis",
+                    name: "Hoarseness / Laryngitis",
+                    details: [
+                        { remedy: "Causticum", symptoms: "Hoarseness or loss of voice, especially in morning, worse from dry cold, overuse of voice. Rawness, soreness in larynx. Cough with inability to expectorate. Paralytic weakness." },
+                        { remedy: "Phosphorus", symptoms: "Hoarseness, voice completely lost, larynx very painful. Cannot talk due to pain. Worse in evening, from cold air, talking. Tickling cough. Anxious." },
+                        { remedy: "Spongia Tosta", symptoms: "Dry, barking, croupy cough with hoarseness. Larynx dry, constricted. Voice gives out when singing or talking. Better from eating or drinking warm things." },
+                        { remedy: "Rumex Crispus", symptoms: "Hoarseness with tickling in throat pit, worse from inhaling cold air. Dry, teasing cough. Covers mouth to keep air warm." },
+                        { remedy: "Argentum Metallicum", symptoms: "Hoarseness or complete loss of voice in professional singers or speakers from overuse. Raw, sore feeling in larynx when coughing. Viscid, grey, jelly-like mucus." }
+                    ]
+                },
+                {
+                    id: "joint_pain_general_arthritis",
+                    name: "Joint Pain (General/Arthritic)",
+                    details: [
+                        { remedy: "Rhus Toxicodendron", symptoms: "Pain and stiffness in joints, worse on initial movement after rest, better with continued motion and warmth. Restlessness. Worse in cold, damp weather, before storms." },
+                        { remedy: "Bryonia Alba", symptoms: "Joints are red, swollen, hot, painful. Pain is stitching, tearing, worse from any motion, better from absolute rest and pressure. Thirsty for large amounts." },
+                        { remedy: "Ledum Palustre", symptoms: "Pain often starts in small joints (feet, hands) and moves upwards. Joints are swollen, pale or purplish, cold to touch but better from cold applications. Gouty pains. Worse from warmth of bed." },
+                        { remedy: "Apis Mellifica", symptoms: "Joints are swollen, puffy, shiny red, with stinging, burning pain. Better from cold applications. Worse from heat and touch. Effusion in joints." },
+                        { remedy: "Colchicum Autumnale", symptoms: "Primarily for gout. Extreme sensitivity to touch, motion, odors. Joints red, hot, swollen. Pain worse in evening and from slight motion. Nausea from smell of food." },
+                        { remedy: "Kalmia Latifolia", symptoms: "Severe, sharp, shooting pains that shift rapidly from joint to joint, often going downwards. Pains worse from motion, often with numbness or tingling. Often associated with heart issues." }
+                    ]
+                },
+                {
+                    id: "sinusitis",
+                    name: "Sinusitis",
+                    details: [
+                        { remedy: "Kali Bichromicum", symptoms: "Thick, stringy, tough, yellow or greenish nasal discharge that can be pulled into long strings. Pain at root of nose, or in specific spots (frontal sinuses, cheekbones). Pressure and fullness. Loss of smell." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Thick, bland, yellow-green discharge. Sinus headache, often frontal. Stuffy nose, worse in warm room, evenings; better in cool, open air. Loss of taste/smell. Weepy." },
+                        { remedy: "Mercurius Solubilis", symptoms: "Greenish, foul-smelling discharge, often streaked with blood. Rawness in nose and throat. Frontal headache. Worse at night, from extremes of temperature. Profuse sweating." },
+                        { remedy: "Silicea (Silica)", symptoms: "Chronic sinusitis with thick, yellow, offensive discharge, or dry, crusty nose. Pain over eyes or at root of nose. Chilly, lacks vital heat. Blockage often worse on one side." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Sinusitis after cold exposure. Thick, yellow, offensive discharge. Extreme sensitivity to cold air and touch. Splinter-like pains. Chilly and irritable." }
+                    ]
+                },
+                {
+                    id: "styes",
+                    name: "Styes",
+                    details: [
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Common remedy for styes, especially on upper eyelid. Thick, bland, yellow-green discharge if it bursts. Itching and burning. Better from cold applications. Weepy, mild disposition." },
+                        { remedy: "Staphysagria", symptoms: "Recurrent styes, or hard nodules left after styes. Often on edges of eyelids. From suppressed anger or emotions. Sensitive, easily offended." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Styes that are very painful, sensitive to touch and cold. Tend to suppurate (form pus) quickly. Splinter-like pain. Chilly, irritable." },
+                        { remedy: "Silicea (Silica)", symptoms: "Styes that are slow to develop or heal, or leave hard nodules. May occur after exposure to drafts when sweaty. Lack of vital heat." },
+                        { remedy: "Apis Mellifica", symptoms: "Eyelid red, swollen, puffy (oedematous), with stinging, burning pain. Better from cold applications." }
+                    ]
+                },
+                {
+                    id: "toothache",
+                    name: "Toothache",
+                    details: [
+                        { remedy: "Chamomilla", symptoms: "Unbearable, throbbing toothache, worse from warmth (especially warm drinks), at night. Patient is extremely irritable, restless, cross. One cheek red, other pale. Often during teething." },
+                        { remedy: "Belladonna", symptoms: "Sudden, violent, throbbing, pulsating toothache. Gums red, swollen, hot. Worse from touch, jarring, lying down. Face may be flushed." },
+                        { remedy: "Coffea Cruda", symptoms: "Severe toothache, temporarily relieved by holding ice-cold water in the mouth. Worse from heat. Patient is oversensitive, nervous, excitable." },
+                        { remedy: "Mercurius Solubilis", symptoms: "Toothache with excessive salivation, offensive breath, metallic taste. Gums spongy, bleed easily. Pains worse at night, from warmth of bed, and damp weather. Looseness of teeth." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Toothache with abscess formation. Very sensitive to touch and cold air. Splinter-like pain. Worse from cold, better from warmth." },
+                        { remedy: "Staphysagria", symptoms: "Toothache in decayed teeth or after dental work. Teeth turn black, crumble easily. Pain worse from touch, cold drinks, after eating. Often from suppressed emotions." }
+                    ]
+                },
+                {
+                    id: "grief_sadness",
+                    name: "Grief / Sadness (Mild)",
+                    details: [
+                        { remedy: "Ignatia Amara", symptoms: "Acute grief and sadness, often after loss or disappointment. Moody, sighing, introspective, may have bursts of tears or laughter. Sensation of a lump in throat. Contradictory symptoms. Better from distraction." },
+                        { remedy: "Natrum Muriaticum", symptoms: "Chronic grief, dwelling on past unpleasant memories. Averse to consolation, prefers to be alone to cry. Headaches, cold sores. Craves salt. Worse from sun." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Sadness with weepiness, seeks sympathy and comfort. Feels forsaken. Symptoms are changeable. Better from open air, gentle motion." },
+                        { remedy: "Phosphoricum Acidum", symptoms: "Apathy and indifference resulting from grief, disappointment, or overstudy. Listless, weak, unable to collect thoughts. Hair loss may occur." }
+                    ]
+                },
+                {
+                    id: "abdominal_colic_infant",
+                    name: "Abdominal Colic (Infant)",
+                    details: [
+                        { remedy: "Chamomilla", symptoms: "Infant is extremely irritable, restless, cross; wants to be carried constantly and is only quiet then. Arches back, screams. Greenish stools. One cheek red, the other pale." },
+                        { remedy: "Colocynthis", symptoms: "Severe, cramping, cutting abdominal pain causing infant to bend double, writhe, or press abdomen against something firm for relief. Pains come in waves. Irritable, angry." },
+                        { remedy: "Magnesia Phosphorica", symptoms: "Colicky pains relieved by warmth (hot water bottle on abdomen), gentle pressure, and bending double. Pains are often radiating. Infant may pass gas with relief." },
+                        { remedy: "Nux Vomica", symptoms: "Colic from overfeeding or mother's dietary indiscretions (rich food, coffee). Infant is irritable, constipated or has small, frequent stools. Arches back." }
+                    ]
+                },
+                {
+                    id: "boils_abscesses",
+                    name: "Boils / Abscesses",
+                    details: [
+                        { remedy: "Belladonna", symptoms: "Early stage of boil/abscess: red, hot, swollen, throbbing pain. Skin shiny. Sudden onset. May have fever." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Promotes suppuration (pus formation) or helps resolve it. Extreme sensitivity to touch and cold. Splinter-like pains. Chilly, irritable. Boil is very tender." },
+                        { remedy: "Silicea (Silica)", symptoms: "Helps ripen abscesses and promote discharge of pus, or for boils that are slow to heal. For 'shy' boils that won't come to a head. Lack of vital heat. May leave scars." },
+                        { remedy: "Myristica Sebifera", symptoms: "Specific for boils, whitlows, or abscesses to hasten suppuration and avoid surgery. Acts as a 'homeopathic knife'." }
+                    ]
+                },
+                {
+                    id: "bronchitis_acute",
+                    name: "Bronchitis (Acute)",
+                    details: [
+                        { remedy: "Bryonia Alba", symptoms: "Dry, hard, painful cough, worse from any motion. Stitching pains in chest. Must hold chest when coughing. Thirsty for large amounts. Irritable." },
+                        { remedy: "Antimonium Tartaricum", symptoms: "Loose, rattling cough with much mucus in chest but difficult to expectorate. Drowsiness, weakness. Wheezing. Child may be pale, sweaty." },
+                        { remedy: "Phosphorus", symptoms: "Dry, tickling, exhausting cough, often with burning pain in chest. Hoarseness. Worse from cold air, talking, lying on left side. Craves cold drinks. Anxious." },
+                        { remedy: "Ipecacuanha", symptoms: "Spasmodic, suffocative cough with persistent nausea and vomiting. Rattling in chest but little expectoration. Face may be pale or bluish." }
+                    ]
+                },
+                {
+                    id: "food_poisoning",
+                    name: "Food Poisoning",
+                    details: [
+                        { remedy: "Arsenicum Album", symptoms: "Violent vomiting and diarrhea, often simultaneous. Burning pains in stomach/abdomen, better from heat. Great anxiety, restlessness, prostration. Chilly. Thirst for small sips of cold water. Worse after midnight." },
+                        { remedy: "Veratrum Album", symptoms: "Profuse, watery vomiting and diarrhea ('rice water' stools). Severe abdominal cramps. Cold sweat, especially on forehead. Extreme coldness and weakness. Thirst for large amounts of cold water." },
+                        { remedy: "Nux Vomica", symptoms: "Nausea, retching, and possible vomiting, but often feels 'if I could only vomit, I would feel better'. Headache, irritability. After rich food, alcohol, or spicy food." },
+                        { remedy: "Phosphorus", symptoms: "Vomiting of food or water as soon as it becomes warm in the stomach. Burning pains. Thirst for very cold water. Fearful, seeks company." }
+                    ]
+                },
+                {
+                    id: "gastritis",
+                    name: "Gastritis",
+                    details: [
+                        { remedy: "Nux Vomica", symptoms: "Pain, nausea, sour belching, heartburn, especially after overeating rich/spicy food, alcohol, coffee, or from stress. Sensation of a stone in the stomach. Irritable, tense." },
+                        { remedy: "Arsenicum Album", symptoms: "Burning pain in stomach, relieved by warmth (hot drinks, hot applications). Vomiting after eating or drinking. Anxiety, restlessness. Thirsty for small sips." },
+                        { remedy: "Pulsatilla Nigricans", symptoms: "Gastritis from rich, fatty foods, pork, ice cream. Bloating, heaviness. Taste of food remains. Not thirsty. Symptoms worse in a warm room." },
+                        { remedy: "Lycopodium Clavatum", symptoms: "Burning, sour eructations. Pressure and bloating in stomach, especially after eating even small amounts. Feels full quickly. Worse 4-8 PM. Craves sweets." }
+                    ]
+                },
+                {
+                    id: "gout",
+                    name: "Gout",
+                    details: [
+                        { remedy: "Colchicum Autumnale", symptoms: "Acute gout attack. Affected joint (often big toe) is extremely painful, red, hot, swollen. Extreme sensitivity to touch, motion, and even strong odors (especially food). Nausea. Worse in evening." },
+                        { remedy: "Ledum Palustre", symptoms: "Gouty pains often start in feet and ascend. Joints are swollen, pale or purplish, cold to touch but feel better from cold applications. Worse from warmth of bed. Cracking in joints." },
+                        { remedy: "Bryonia Alba", symptoms: "Joints red, hot, swollen. Stitching pains, worse from slightest motion, better from pressure and absolute rest. Irritable." },
+                        { remedy: "Urtica Urens", symptoms: "Gout with itching, stinging pains. Often associated with hives or high uric acid levels. May help eliminate uric acid." }
+                    ]
+                },
+                {
+                    id: "hangover",
+                    name: "Hangover",
+                    details: [
+                        { remedy: "Nux Vomica", symptoms: "Classic hangover remedy. Headache, nausea, vomiting, irritability, sensitivity to light/noise. From overindulgence in alcohol or rich food. Often feels chilly and 'if only I could vomit'." },
+                        { remedy: "Carbo Vegetabilis", symptoms: "Hangover with bloating, gas, sour belching. Head feels heavy. Weakness, air hunger (wants to be fanned). Indigestion after alcohol." },
+                        { remedy: "Sulphuricum Acidum", symptoms: "Hangover with sour vomiting, trembling, weakness, and cold sweat. Craves alcohol. Internal trembling. Hiccups." }
+                    ]
+                },
+                {
+                    id: "sciatica",
+                    name: "Sciatica",
+                    details: [
+                        { remedy: "Colocynthis", symptoms: "Left-sided sciatica with severe, cramping, cutting, or drawing pains, often radiating down the back of thigh to knee or foot. Better from hard pressure and warmth. Worse from gentle touch, anger." },
+                        { remedy: "Magnesia Phosphorica", symptoms: "Right-sided sciatica with cramping, shooting, lightning-like pains. Better from warmth and pressure. Pains may change location quickly." },
+                        { remedy: "Rhus Toxicodendron", symptoms: "Sciatic pain worse on initial movement after rest, better with continued motion. Numbness and tingling. Worse from cold, damp weather, overexertion. Restlessness." },
+                        { remedy: "Gnaphalium Polycephalum", symptoms: "Sciatica with intense pain along the nerve, alternating with numbness in the affected area. Worse from motion, lying down; better sitting in a chair." }
+                    ]
+                },
+                {
+                    id: "shingles_herpes_zoster",
+                    name: "Shingles (Herpes Zoster)",
+                    details: [
+                        { remedy: "Rhus Toxicodendron", symptoms: "Vesicular eruption with intense itching and burning. Restlessness. Pains often neuralgic. Better from warmth and gentle motion. Often left-sided." },
+                        { remedy: "Apis Mellifica", symptoms: "Shingles with rosy red, swollen skin, oedematous blisters. Stinging, burning pain. Better from cold applications. Worse from heat and touch." },
+                        { remedy: "Ranunculus Bulbosus", symptoms: "Vesicles are often bluish, with intense, stitching, or burning pains, especially along intercostal nerves (chest wall). Very sensitive to touch, motion, changes in weather." },
+                        { remedy: "Mezereum", symptoms: "Violent neuralgic pains after shingles, worse at night, from warmth of bed. Eruption forms thick crusts with pus underneath. Intense itching." }
+                    ]
+                },
+                {
+                    id: "sunburn",
+                    name: "Sunburn",
+                    details: [
+                        { remedy: "Cantharis Vesicatoria", symptoms: "Severe sunburn with blistering. Intense burning, smarting, raw pain. Better from cool applications." },
+                        { remedy: "Urtica Urens", symptoms: "Milder sunburn with redness, stinging, and itching, like nettle rash. Skin may be slightly blistered." },
+                        { remedy: "Belladonna", symptoms: "Sunburn where skin is bright red, hot, dry, throbbing. May have headache and fever. Sensitive to touch." },
+                        { remedy: "Apis Mellifica", symptoms: "Sunburn with pink, swollen, oedematous skin. Stinging, burning pain. Better from cold applications." }
+                    ]
+                },
+                {
+                    id: "tonsillitis",
+                    name: "Tonsillitis",
+                    details: [
+                        { remedy: "Belladonna", symptoms: "Sudden onset. Tonsils bright red, swollen, especially right side. Throat dry, burning, constricted. High fever, flushed face. Painful swallowing." },
+                        { remedy: "Hepar Sulphuris Calcareum", symptoms: "Tonsillitis with splinter-like pains radiating to ears on swallowing. Sensation of a lump. Tendency to form pus (abscess). Very sensitive to cold and touch. Chilly, irritable." },
+                        { remedy: "Baryta Carbonica", symptoms: "Recurrent tonsillitis, especially in children who are slow mentally and physically. Tonsils enlarge with every cold. Swollen glands in neck. Takes cold easily." },
+                        { remedy: "Mercurius Solubilis", symptoms: "Bluish-red, swollen tonsils. Dirty coating on tongue, offensive breath, excessive salivation. Pain worse at night, from warmth of bed. Creeping chilliness." },
+                        { remedy: "Phytolacca Decandra", symptoms: "Dark red or purplish tonsils. Pain at root of tongue or shooting to ears on swallowing. Sensation of a hot ball in throat. Aching all over." }
+                    ]
+                },
+                {
+                    id: "palpitations_simple",
+                    name: "Palpitations (Simple, Benign)",
+                    details: [
+                        { remedy: "Aconitum Napellus", symptoms: "Palpitations with intense anxiety, fear of death, restlessness. Often after a fright or shock. Sudden onset. May feel a constriction in chest." },
+                        { remedy: "Coffea Cruda", symptoms: "Palpitations from joy, surprise, stimulants (coffee), or nervous excitement. Racing thoughts, sleeplessness. Senses acute." },
+                        { remedy: "Digitalis Purpurea", symptoms: "Slow pulse intermitting every third, fifth, or seventh beat. Sensation as if heart would stop if they moved. Faintness. Often in elderly or with heart weakness (consult doctor)." },
+                        { remedy: "Lachesis Mutus", symptoms: "Palpitations worse after sleep, from constriction around neck or chest. Sensation of suffocation. Often in menopause or with left-sided complaints. Talkative." },
+                        { remedy: "Natrum Muriaticum", symptoms: "Palpitations from grief, emotional suppression, or exertion. Sensation of heart fluttering or trembling. Worse lying on left side. Consolation aggravates." }
+                    ]
+                }
+                // Add more ailments here if needed, ensuring correct comma separation.
+            ];
+
+            const ailmentDropdown = document.getElementById('ailmentDropdown');
+            const remedyResultDiv = document.getElementById('remedyResult');
+
+            if (!ailmentDropdown || !remedyResultDiv) {
+                console.error("Essential HTML elements (dropdown or result area) not found.");
+                if(remedyResultDiv) remedyResultDiv.innerHTML = "<p class='error-message'>Error: Page structure is missing essential elements.</p>";
+                return;
+            }
+
+            try {
+                if (!remedyData || remedyData.length === 0) {
+                    throw new Error("Remedy data is missing or empty.");
+                }
+
+                remedyData.sort((a, b) => a.name.localeCompare(b.name)); // Sort ailments alphabetically
+                
+                remedyData.forEach(ailment => {
+                    if (ailment && ailment.id && ailment.name) { // Basic check for valid ailment object
+                        const option = document.createElement('option');
+                        option.value = ailment.id;
+                        option.textContent = ailment.name;
+                        ailmentDropdown.appendChild(option);
+                    } else {
+                        console.warn("Skipping invalid ailment data object:", ailment);
+                    }
+                });
+                
+                // Check if any options were actually added
+                if (ailmentDropdown.options.length <= 1) { // Only the default option is present
+                     throw new Error("No ailments were loaded into the dropdown. Check remedyData.");
+                }
+
+            } catch (e) {
+                console.error("Error populating dropdown:", e);
+                remedyResultDiv.innerHTML = `<p class='error-message'>Could not load ailments: ${e.message}. Please check the remedy data.</p>`;
+                return; // Stop further execution if dropdown isn't populated
+            }
+
+            ailmentDropdown.addEventListener('change', function() {
+                const selectedAilmentId = this.value;
+                remedyResultDiv.innerHTML = ''; // Clear previous results
+
+                if (selectedAilmentId) {
+                    const ailment = remedyData.find(a => a.id === selectedAilmentId);
+                    if (ailment && ailment.details && ailment.details.length > 0) {
+                        ailment.details.forEach(item => {
+                            const remedyItemDiv = document.createElement('div');
+                            remedyItemDiv.classList.add('remedy-item');
+
+                            const remedyName = document.createElement('h3');
+                            remedyName.textContent = item.remedy;
+                            remedyItemDiv.appendChild(remedyName);
+
+                            const symptomsPara = document.createElement('p');
+                            symptomsPara.innerHTML = `<strong>Indicating Symptoms:</strong> ${item.symptoms}`; // Using innerHTML for <strong>
+                            remedyItemDiv.appendChild(symptomsPara);
+
+                            remedyResultDiv.appendChild(remedyItemDiv);
+                        });
+                    } else {
+                        remedyResultDiv.innerHTML = '<p>No remedy information found for the selected ailment, or details are missing.</p>';
+                    }
+                } else {
+                    remedyResultDiv.innerHTML = '<p>Please select an ailment from the list to see potential remedies and their indications.</p>';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
